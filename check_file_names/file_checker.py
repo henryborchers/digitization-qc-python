@@ -71,11 +71,48 @@ def check_filenames(directories, file_type):
                         file_tree[str(prefix)] = [file_number]
                     else:
                         file_tree[prefix].append(file_number)
-                    if file_type.casefold() == "A".casefold():
+                                        if file_type.casefold() == "A".casefold():
                         if len(file_number) != 3:
                             error_list.append(
                                 f'{file} in {directory} does not adhere to the correct naming convention (3 '
                                 f'digits after hyphen).')
+                        try:
+                            part1, part2, part3, part4 = prefix.split("_")
+                            if len(part2) != 3:
+                                error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                  f'convention (3 digits for box number).')
+                            if len(part3) != 3:
+                                error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                  f'convention (3 digits for folder number).')
+                            if len(part4) != 3:
+                                error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                  f'convention (3 digits for item number).')
+                        except ValueError:
+                            try:
+                                part1, part2, part3 = prefix.split("_")
+                                error_list.append(f'WARNING: {file} in {directory} is missing one part of the '
+                                                  f'conventional naming scheme (collection_box_folder_item-pad)')
+                                if len(file_number) != 3:
+                                    error_list.append(
+                                        f'{file} in {directory} does not adhere to the correct naming convention (3 '
+                                        f'digits after hyphen).')
+                                if len(part2) != 3:
+                                    error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                      f'convention (3 digits for box number).')
+                                if len(part3) != 3:
+                                    error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                      f'convention (3 digits for folder number).')
+                            except ValueError:
+                                error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                                  f'convention (collection_box_folder_item-pad)')
+                    if file_type.casefold() == "C".casefold():
+                        if len(file_number) != 8:
+                            error_list.append(
+                                f'{file} in {directory} does not adhere to the correct naming convention (8 '
+                                f'digits after hyphen).')
+                else:
+                    error_list.append(f'{file} in {directory} does not adhere to the correct naming '
+                                      f'conventions (missing hyphen).')
                     if file_type.casefold() == "C".casefold():
                         if len(file_number) != 8:
                             error_list.append(

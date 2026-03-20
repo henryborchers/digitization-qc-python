@@ -2,6 +2,7 @@
 
 import os
 import sys
+from datetime import date
 
 
 def main():
@@ -14,9 +15,13 @@ def main():
           '\n\t- All files that are in the access directory are also present in the corresponding preservation directory,'
           ' and vice versa.')
 
+    day = str(date.today())
+    report_title = f'{day}_file_checker_report.txt'
+
     directories = []
     access_directory = ''
     pres_directory = ''
+    report_location = ''
     directory = input('\nPlease enter the directory (e.g. /Volumes/digitize/project/QAqueue/session) in which your '
                       'files are stored: ')
     if sys.platform == 'win32':
@@ -24,24 +29,36 @@ def main():
         directories.append(access_directory)
         pres_directory = f'{directory}\\preservation'
         directories.append(pres_directory)
+        desktop_path = os.path.expanduser('~\\Desktop')
+        report_location = f'{desktop_path}\\{report_title}'
     if sys.platform == 'darwin':
         access_directory = f'{directory}/access'
         directories.append(access_directory)
         pres_directory = f'{directory}/preservation'
         directories.append(pres_directory)
+        desktop_path = os.path.expanduser('~/Desktop')
+        report_location = f'{desktop_path}/{report_title}'
 
+    outfile = open(report_location, 'a')
+    make_report_header(directories, outfile)
     file_type, directories = run_file_type_check(directories)
     error_list = check_filenames(directories, file_type)
-    validate_errors = validate_files(access_directory, pres_directory)
-    if validate_errors:
-        error_list.extend(validate_errors)
-    if len(error_list) > 0:
-        print(f'\nThe following discrepancies were discovered:')
-        for error in error_list:
-            print(f'\t{error}')
-    else:
-        print('File names appear to be valid.')
+    for error in error_list:
+        print(error, file=outfile)
+    matching_errors = validate_files(access_directory, pres_directory,outfile)
 
+    total_errors = len(error_list) + matching_errors
+
+    print(f'{total_errors} discrepancies were discovered. Detailed report saved to {report_location}')
+    outfile.close()
+
+
+def make_report_header(directories, outfile):
+    print('REPORT FOR THE FOLLOWING DIRECTORIES:', file=outfile)
+    for directory in directories:
+        print(f'\t{directory}', file=outfile)
+    print(f'\n', file=outfile)
+    
 
 def run_file_type_check(directories):
     file_type = input('\nEnter file type ["A" for Archival or "C" for cataloged]: ')
@@ -71,7 +88,7 @@ def check_filenames(directories, file_type):
                         file_tree[str(prefix)] = [file_number]
                     else:
                         file_tree[prefix].append(file_number)
-                                        if file_type.casefold() == "A".casefold():
+                    if file_type.casefold() == "A".casefold():
                         if len(file_number) != 3:
                             error_list.append(
                                 f'{file} in {directory} does not adhere to the correct naming convention (3 '
@@ -113,14 +130,6 @@ def check_filenames(directories, file_type):
                 else:
                     error_list.append(f'{file} in {directory} does not adhere to the correct naming '
                                       f'conventions (missing hyphen).')
-                    if file_type.casefold() == "C".casefold():
-                        if len(file_number) != 8:
-                            error_list.append(
-                                f'{file} in {directory} does not adhere to the correct naming convention (8 '
-                                f'digits after hyphen).')
-                else:
-                    error_list.append(f'{file} in {directory} does not adhere to the correct naming '
-                                      f'conventions (missing hyphen).')
         sequence_errors = check_sequential(file_tree, directory)
         if sequence_errors:
             error_list.extend(sequence_errors)
@@ -151,8 +160,8 @@ def check_sequential(file_tree, directory):
     return sequence_errors
 
 
-def validate_files(access_directory, pres_directory):
-    validate_errors = []
+def validate_files(access_directory, pres_directory, outfile):
+    matching_errors = 0
     access_list = os.listdir(access_directory)
     access_list_trimmed = []
     for file in access_list:
@@ -166,13 +175,20 @@ def validate_files(access_directory, pres_directory):
 
     pres_missing = list(filter(lambda x: x not in pres_list_trimmed, access_list_trimmed))
     access_missing = list(filter(lambda x: x not in access_list_trimmed, pres_list_trimmed))
+
     if pres_missing:
-        validate_errors.append(f'The following files are present in the access directory, but are not present in '
-                               f'the preservation directory: {pres_missing}')
+        matching_errors += len(pres_missing)
+        print(f'\nThe following files are present in the access directory, but are not present in '
+                               f'the preservation directory: ', file=outfile)
+        for file in pres_missing:
+            print(f'\t{file}', file=outfile)
     if access_missing:
-        validate_errors.append(f'The following files are present in the preservation directory, but are not present '
-                               f'in the access directory: {access_missing}')
-    return validate_errors
+        matching_errors += len(access_missing)
+        print(f'The following files are present in the preservation directory, but are not present '
+                               f'in the access directory: ', file=outfile)
+        for file in access_missing:
+            print(f'\t{file}',file=outfile)
+    return matching_errors
 
 
 if __name__ == '__main__':

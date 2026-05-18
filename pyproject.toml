@@ -1,0 +1,25 @@
+[project]
+name = 'file_checker'
+version = '2026.0.0'
+description  = 'Used for checking file names against DS specifications'
+requires-python = '>= 3.10'
+authors = [
+    {name = 'Anna Smith', email = 'annas15@illinois.edu'}]
+license = 'NCSA'
+
+[dependency-groups]
+dev = [
+  'pytest', 'ruff']
+
+[project.scripts]
+file_checker = 'file_checker.file_checker_new:main'
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "PLW", "PLC", "SIM"]
+
+[tool.setuptools]
+packages = ['file_checker']
+
+[build-system]
+requires = ['setuptools >= 82.0.1']
+build-backend = 'setuptools.build_meta'

@@ -59,6 +59,8 @@ Settings:
     Input Directory: Path to validate.
     File Type: Either archival or cataloged
     Report File: Location to save report. By default, this will be saved to the desktop with a name in the format YYYY-MM-DD_file_checker_report.txt
+    
+Created by Anna Smith
 """
 
     def job_options(self):

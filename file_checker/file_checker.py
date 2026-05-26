@@ -25,6 +25,7 @@ def main():
         for directory in directories:
             outfile.write(f'\nREPORT FOR {directory}')
             error_list = check_filenames(directory, file_type)
+            error_list.sort()
             for error in error_list:
                 outfile.write(f'\n{error}')
 
@@ -83,7 +84,7 @@ def make_report_header(directories, outfile):
 
 
 def run_file_type_check(file_type):
-    while file_type.casefold() != 'A'.casefold() and file_type.casefold() != 'C'.casefold():
+    while file_type != 'Archival' and file_type != 'Cataloged':
         print(f'ERROR: Invalid file type. You entered {file_type}.'
               f'\nThis program is ending. Please run it again with correct input.')
         exit()
@@ -99,16 +100,15 @@ def check_filenames(directory, file_type):
         basic_errors = get_basic_errors(file)
         if basic_errors:
             error_list.extend(basic_errors)
-        else:
-            for prefix, file_number in file_tree.items():
-                file_errors = get_prefix_errors(prefix, file_number, file_type)
-                if file_errors:
-                    error_list.extend(file_errors)
-            sequence_errors = check_sequential(file_tree)
-            if sequence_errors:
-                error_list.extend(sequence_errors)
-            if hyphen_errors:
-                error_list.extend(hyphen_errors)
+    for prefix, file_number in file_tree.items():
+        file_errors = get_prefix_errors(prefix, file_number, file_type)
+        if file_errors:
+            error_list.extend(file_errors)
+    sequence_errors = check_sequential(file_tree)
+    if sequence_errors:
+        error_list.extend(sequence_errors)
+    if hyphen_errors:
+        error_list.extend(hyphen_errors)
 
     return error_list
 
@@ -142,18 +142,18 @@ def get_basic_errors(file):
 
 
 def get_prefix_errors(prefix, file_number, file_type):
-    file_errors = []
-    if file_type.casefold() == 'A'.casefold():
+    prefix_errors = []
+    if file_type == 'Archival':
         archival_errors = check_archival_file(file_number, prefix)
         if archival_errors:
-            file_errors.extend(archival_errors)
+            prefix_errors.extend(archival_errors)
 
-    if file_type.casefold() == 'C'.casefold():
+    if file_type == 'Cataloged':
         cat_errors = check_cat_errors(file_number, prefix)
         if cat_errors:
-            file_errors.extend(cat_errors)
+            prefix_errors.extend(cat_errors)
 
-    return file_errors
+    return prefix_errors
 
 
 def check_cat_errors(file_number, prefix):
@@ -167,7 +167,6 @@ def check_cat_errors(file_number, prefix):
 
 
 def check_archival_file(file_number, prefix):
-    parts = 0
     archival_errors = []
     for number in file_number:
         if len(number) != 3:
@@ -178,9 +177,8 @@ def check_archival_file(file_number, prefix):
         if len(prefix_parts) != 4:
             archival_errors.append(
                 f'{prefix}-{number} does not adhere to the correct naming convention (collection_box_folder_item-pad)')
-        for part in prefix_parts:
-            parts += 1
-            if parts > 1 and len(part) != 3:
+        for position_counter, part in enumerate(prefix_parts):
+            if position_counter != 0 and len(part) != 3:
                 archival_errors.append(f'{prefix}-{number} does not adhere to the correct naming '
                                    f'convention (3 digits for box number, folder number, and item number).')
     return archival_errors
@@ -236,13 +234,19 @@ def make_file_number_lists(access_directory, pres_directory):
     access_list = os.listdir(access_directory)
     access_list_trimmed = []
     for file in access_list:
-        trimmed_file = file.split('.')[0]
-        access_list_trimmed.append(trimmed_file)
+        if file.startswith('.'):
+            access_list_trimmed.append(file)
+        else:
+            trimmed_file = file.split('.')[0]
+            access_list_trimmed.append(trimmed_file)
     pres_list = os.listdir(pres_directory)
     pres_list_trimmed = []
     for file in pres_list:
-        trimmed_file = file.split('.')[0]
-        pres_list_trimmed.append(trimmed_file)
+        if file.startswith('.'):
+            pres_list_trimmed.append(file)
+        else:
+            trimmed_file = file.split('.')[0]
+            pres_list_trimmed.append(trimmed_file)
     return access_list_trimmed, pres_list_trimmed
 
 

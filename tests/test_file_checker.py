@@ -27,57 +27,57 @@ def test_check_filenames_check_empty_dir(tmp_path):
 
 
 def test_check_filenames_check_not_tiff(tmp_path):
-    csv = tmp_path / "csv_test.csv"
+    csv = tmp_path / "9999-00000001.csv"
     csv.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'c')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Cataloged')) == 1
 
 
 def test_check_filenames_check_whitespace(tmp_path):
-    csv = tmp_path / " csv-test.tiff"
+    csv = tmp_path / " 9999-00000001.tiff"
     csv.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'c')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Cataloged')) == 1
 
 
 def test_check_filenames_no_errors(tmp_path):
     csv = tmp_path / "9999-00000001.tiff"
     csv.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'c')) == 0
+    assert len(file_checker.check_filenames(tmp_path, 'Cataloged')) == 0
 
 
 def test_check_filenames_no_errors_arc(tmp_path):
     csv = tmp_path / "9999_001_001_001-001.tiff"
     csv.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'a')) == 0
+    assert len(file_checker.check_filenames(tmp_path, 'Archival')) == 0
 
 
 def test_check_filenames_suffix_cat(tmp_path):
     cat = tmp_path / "9999-0000001.tiff"
     cat.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'c')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Cataloged')) == 1
 
 
 def test_check_filenames_suffix_arc(tmp_path):
     arc = tmp_path / "9999_001_001_001-01.tiff"
     arc.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'a')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Archival')) == 1
 
 
 def test_check_filenames_no_hyphen(tmp_path):
     file = tmp_path / "0000001.tiff"
     file.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'c')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Cataloged')) == 1
 
 
 def test_check_filenames_no_item_number_arc(tmp_path):
     file = tmp_path / "9999_001_001-001.tiff"
     file.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'a')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Archival')) == 1
 
 
 def test_check_filenames_two_digit_item_number_arc(tmp_path):
     file = tmp_path / "9999_001_001_01-001.tiff"
     file.touch()
-    assert len(file_checker.check_filenames(tmp_path, 'a')) == 1
+    assert len(file_checker.check_filenames(tmp_path, 'Archival')) == 1
 
 
 def test_not_sequential(tmp_path):
@@ -104,7 +104,7 @@ def test_invalid_file_type(tmp_path):
     assert e.type == SystemExit
 
 def test_valid_file_type(tmp_path):
-    assert file_checker.run_file_type_check('c') == 'c'
+    assert file_checker.run_file_type_check('Cataloged') == 'Cataloged'
 
 
 def test_missing_access_file(tmp_path):

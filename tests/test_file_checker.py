@@ -23,7 +23,7 @@ def test_make_report_header(tmp_path):
 def test_check_filenames_check_empty_dir(tmp_path):
     empty_dir = tmp_path / "empty_dir"
     empty_dir.mkdir()
-    assert file_checker.check_filenames(empty_dir, 'c') == []
+    assert file_checker.check_filenames(empty_dir, 'Cataloged') == []
 
 
 def test_check_filenames_check_not_tiff(tmp_path):
